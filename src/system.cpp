@@ -551,6 +551,13 @@ void System::Clear() {
     dragged.Clear();
 }
 
+void System::Empty() {
+    entity.Empty();
+    param.Empty();
+    eq.Empty();
+    dragged.Empty();
+}
+
 void System::MarkParamsFree(bool find) {
     // If requested, find all the free (unbound) variables. This might be
     // more than the number of degrees of freedom. Don't always do this,

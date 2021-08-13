@@ -289,6 +289,7 @@ public:
                           bool andFindBad = false, bool andFindFree = false);
 
     void Clear();
+    void Empty();
 };
 
 #include "ttf.h"
@@ -499,6 +500,9 @@ public:
     // Styles are handled a bit differently.
 
     void Clear();
+#   ifdef LIBRARY
+    void Empty();
+#   endif
 
     BBox CalculateEntityBBox(bool includingInvisible);
     Group *GetRunningMeshGroupFor(hGroup h);
