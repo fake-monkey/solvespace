@@ -46,30 +46,47 @@ typedef struct {
     double          val;
 } Slvs_Param;
 
+typedef enum {
+    SLVS_E_POINT_IN_3D            = 2000,
+    SLVS_E_POINT_IN_2D            = 2001,
+    SLVS_E_POINT_N_TRANS          = 2010,
+    SLVS_E_POINT_N_ROT_TRANS      = 2011,
+    SLVS_E_POINT_N_COPY           = 2012,
+    SLVS_E_POINT_N_ROT_AA         = 2013,
+    SLVS_E_POINT_N_ROT_AXIS_TRANS = 2014,
 
-#define SLVS_E_POINT_IN_3D          50000
-#define SLVS_E_POINT_IN_2D          50001
+    SLVS_E_NORMAL_IN_3D    = 3000,
+    SLVS_E_NORMAL_IN_2D    = 3001,
+    SLVS_E_NORMAL_N_COPY   = 3010,
+    SLVS_E_NORMAL_N_ROT    = 3011,
+    SLVS_E_NORMAL_N_ROT_AA = 3012,
 
-#define SLVS_E_NORMAL_IN_3D         60000
-#define SLVS_E_NORMAL_IN_2D         60001
+    SLVS_E_DISTANCE        = 4000,
+    SLVS_E_DISTANCE_N_COPY = 4001,
 
-#define SLVS_E_DISTANCE             70000
+    SLVS_E_FACE_NORMAL_PT        = 5000,
+    SLVS_E_FACE_XPROD            = 5001,
+    SLVS_E_FACE_N_ROT_TRANS      = 5002,
+    SLVS_E_FACE_N_TRANS          = 5003,
+    SLVS_E_FACE_N_ROT_AA         = 5004,
+    SLVS_E_FACE_ROT_NORMAL_PT    = 5005,
+    SLVS_E_FACE_N_ROT_AXIS_TRANS = 5006,
 
-/* The special point, normal, and distance types used for parametric step
- * and repeat, extrude, and assembly are currently not exposed. Please
- * contact us if you are interested in using these. */
-
-#define SLVS_E_WORKPLANE            80000
-#define SLVS_E_LINE_SEGMENT         80001
-#define SLVS_E_CUBIC                80002
-#define SLVS_E_CIRCLE               80003
-#define SLVS_E_ARC_OF_CIRCLE        80004
+    SLVS_E_WORKPLANE      = 10000,
+    SLVS_E_LINE_SEGMENT   = 11000,
+    SLVS_E_CUBIC          = 12000,
+    SLVS_E_CUBIC_PERIODIC = 12001,
+    SLVS_E_CIRCLE         = 13000,
+    SLVS_E_ARC_OF_CIRCLE  = 14000,
+    SLVS_E_TTF_TEXT       = 15000,
+    SLVS_E_IMAGE          = 16000,
+} Slvs_EntityType;
 
 typedef struct {
     Slvs_hEntity    h;
     Slvs_hGroup     group;
 
-    int             type;
+    Slvs_EntityType type;
 
     Slvs_hEntity    wrkpl;
     Slvs_hEntity    point[4];
@@ -79,46 +96,50 @@ typedef struct {
     Slvs_hParam     param[4];
 } Slvs_Entity;
 
-#define SLVS_C_POINTS_COINCIDENT        100000
-#define SLVS_C_PT_PT_DISTANCE           100001
-#define SLVS_C_PT_PLANE_DISTANCE        100002
-#define SLVS_C_PT_LINE_DISTANCE         100003
-#define SLVS_C_PT_FACE_DISTANCE         100004
-#define SLVS_C_PT_IN_PLANE              100005
-#define SLVS_C_PT_ON_LINE               100006
-#define SLVS_C_PT_ON_FACE               100007
-#define SLVS_C_EQUAL_LENGTH_LINES       100008
-#define SLVS_C_LENGTH_RATIO             100009
-#define SLVS_C_EQ_LEN_PT_LINE_D         100010
-#define SLVS_C_EQ_PT_LN_DISTANCES       100011
-#define SLVS_C_EQUAL_ANGLE              100012
-#define SLVS_C_EQUAL_LINE_ARC_LEN       100013
-#define SLVS_C_SYMMETRIC                100014
-#define SLVS_C_SYMMETRIC_HORIZ          100015
-#define SLVS_C_SYMMETRIC_VERT           100016
-#define SLVS_C_SYMMETRIC_LINE           100017
-#define SLVS_C_AT_MIDPOINT              100018
-#define SLVS_C_HORIZONTAL               100019
-#define SLVS_C_VERTICAL                 100020
-#define SLVS_C_DIAMETER                 100021
-#define SLVS_C_PT_ON_CIRCLE             100022
-#define SLVS_C_SAME_ORIENTATION         100023
-#define SLVS_C_ANGLE                    100024
-#define SLVS_C_PARALLEL                 100025
-#define SLVS_C_PERPENDICULAR            100026
-#define SLVS_C_ARC_LINE_TANGENT         100027
-#define SLVS_C_CUBIC_LINE_TANGENT       100028
-#define SLVS_C_EQUAL_RADIUS             100029
-#define SLVS_C_PROJ_PT_DISTANCE         100030
-#define SLVS_C_WHERE_DRAGGED            100031
-#define SLVS_C_CURVE_CURVE_TANGENT      100032
-#define SLVS_C_LENGTH_DIFFERENCE        100033
+typedef enum {
+    SLVS_C_POINTS_COINCIDENT   = 20,
+    SLVS_C_PT_PT_DISTANCE      = 30,
+    SLVS_C_PT_PLANE_DISTANCE   = 31,
+    SLVS_C_PT_LINE_DISTANCE    = 32,
+    SLVS_C_PT_FACE_DISTANCE    = 33,
+    SLVS_C_PROJ_PT_DISTANCE    = 34,
+    SLVS_C_PT_IN_PLANE         = 41,
+    SLVS_C_PT_ON_LINE          = 42,
+    SLVS_C_PT_ON_FACE          = 43,
+    SLVS_C_EQUAL_LENGTH_LINES  = 50,
+    SLVS_C_LENGTH_RATIO        = 51,
+    SLVS_C_EQ_LEN_PT_LINE_D    = 52,
+    SLVS_C_EQ_PT_LN_DISTANCES  = 53,
+    SLVS_C_EQUAL_ANGLE         = 54,
+    SLVS_C_EQUAL_LINE_ARC_LEN  = 55,
+    SLVS_C_LENGTH_DIFFERENCE   = 56,
+    SLVS_C_SYMMETRIC           = 60,
+    SLVS_C_SYMMETRIC_HORIZ     = 61,
+    SLVS_C_SYMMETRIC_VERT      = 62,
+    SLVS_C_SYMMETRIC_LINE      = 63,
+    SLVS_C_AT_MIDPOINT         = 70,
+    SLVS_C_HORIZONTAL          = 80,
+    SLVS_C_VERTICAL            = 81,
+    SLVS_C_DIAMETER            = 90,
+    SLVS_C_PT_ON_CIRCLE        = 100,
+    SLVS_C_SAME_ORIENTATION    = 110,
+    SLVS_C_ANGLE               = 120,
+    SLVS_C_PARALLEL            = 121,
+    SLVS_C_PERPENDICULAR       = 122,
+    SLVS_C_ARC_LINE_TANGENT    = 123,
+    SLVS_C_CUBIC_LINE_TANGENT  = 124,
+    SLVS_C_CURVE_CURVE_TANGENT = 125,
+    SLVS_C_EQUAL_RADIUS        = 130,
+    SLVS_C_WHERE_DRAGGED       = 200,
+
+    SLVS_C_COMMENT = 1000,
+} Slvs_ConstraintType;
 
 typedef struct {
     Slvs_hConstraint    h;
     Slvs_hGroup         group;
 
-    int                 type;
+    Slvs_ConstraintType type;
 
     Slvs_hEntity        wrkpl;
 
@@ -235,7 +256,7 @@ static inline Slvs_Entity Slvs_MakePoint2d(Slvs_hEntity h, Slvs_hGroup group,
     memset(&r, 0, sizeof(r));
     r.h = h;
     r.group = group;
-    r.type = SLVS_E_POINT_IN_2D;
+    r.type  = SLVS_E_POINT_IN_2D;
     r.wrkpl = wrkpl;
     r.param[0] = u;
     r.param[1] = v;
@@ -248,7 +269,7 @@ static inline Slvs_Entity Slvs_MakePoint3d(Slvs_hEntity h, Slvs_hGroup group,
     memset(&r, 0, sizeof(r));
     r.h = h;
     r.group = group;
-    r.type = SLVS_E_POINT_IN_3D;
+    r.type  = SLVS_E_POINT_IN_3D;
     r.wrkpl = SLVS_FREE_IN_3D;
     r.param[0] = x;
     r.param[1] = y;
@@ -263,7 +284,7 @@ static inline Slvs_Entity Slvs_MakeNormal3d(Slvs_hEntity h, Slvs_hGroup group,
     memset(&r, 0, sizeof(r));
     r.h = h;
     r.group = group;
-    r.type = SLVS_E_NORMAL_IN_3D;
+    r.type  = SLVS_E_NORMAL_IN_3D;
     r.wrkpl = SLVS_FREE_IN_3D;
     r.param[0] = qw;
     r.param[1] = qx;
@@ -278,7 +299,7 @@ static inline Slvs_Entity Slvs_MakeNormal2d(Slvs_hEntity h, Slvs_hGroup group,
     memset(&r, 0, sizeof(r));
     r.h = h;
     r.group = group;
-    r.type = SLVS_E_NORMAL_IN_2D;
+    r.type  = SLVS_E_NORMAL_IN_2D;
     r.wrkpl = wrkpl;
     return r;
 }
@@ -289,7 +310,7 @@ static inline Slvs_Entity Slvs_MakeDistance(Slvs_hEntity h, Slvs_hGroup group,
     memset(&r, 0, sizeof(r));
     r.h = h;
     r.group = group;
-    r.type = SLVS_E_DISTANCE;
+    r.type  = SLVS_E_DISTANCE;
     r.wrkpl = wrkpl;
     r.param[0] = d;
     return r;
@@ -302,7 +323,7 @@ static inline Slvs_Entity Slvs_MakeLineSegment(Slvs_hEntity h, Slvs_hGroup group
     memset(&r, 0, sizeof(r));
     r.h = h;
     r.group = group;
-    r.type = SLVS_E_LINE_SEGMENT;
+    r.type  = SLVS_E_LINE_SEGMENT;
     r.wrkpl = wrkpl;
     r.point[0] = ptA;
     r.point[1] = ptB;
@@ -317,7 +338,7 @@ static inline Slvs_Entity Slvs_MakeCubic(Slvs_hEntity h, Slvs_hGroup group,
     memset(&r, 0, sizeof(r));
     r.h = h;
     r.group = group;
-    r.type = SLVS_E_CUBIC;
+    r.type  = SLVS_E_CUBIC;
     r.wrkpl = wrkpl;
     r.point[0] = pt0;
     r.point[1] = pt1;
@@ -335,7 +356,7 @@ static inline Slvs_Entity Slvs_MakeArcOfCircle(Slvs_hEntity h, Slvs_hGroup group
     memset(&r, 0, sizeof(r));
     r.h = h;
     r.group = group;
-    r.type = SLVS_E_ARC_OF_CIRCLE;
+    r.type  = SLVS_E_ARC_OF_CIRCLE;
     r.wrkpl = wrkpl;
     r.normal = normal;
     r.point[0] = center;
@@ -352,7 +373,7 @@ static inline Slvs_Entity Slvs_MakeCircle(Slvs_hEntity h, Slvs_hGroup group,
     memset(&r, 0, sizeof(r));
     r.h = h;
     r.group = group;
-    r.type = SLVS_E_CIRCLE;
+    r.type  = SLVS_E_CIRCLE;
     r.wrkpl = wrkpl;
     r.point[0] = center;
     r.normal = normal;
@@ -366,7 +387,7 @@ static inline Slvs_Entity Slvs_MakeWorkplane(Slvs_hEntity h, Slvs_hGroup group,
     memset(&r, 0, sizeof(r));
     r.h = h;
     r.group = group;
-    r.type = SLVS_E_WORKPLANE;
+    r.type  = SLVS_E_WORKPLANE;
     r.wrkpl = SLVS_FREE_IN_3D;
     r.point[0] = origin;
     r.normal = normal;
@@ -375,7 +396,7 @@ static inline Slvs_Entity Slvs_MakeWorkplane(Slvs_hEntity h, Slvs_hGroup group,
 
 static inline Slvs_Constraint Slvs_MakeConstraint(Slvs_hConstraint h,
                                                   Slvs_hGroup group,
-                                                  int type,
+                                                  Slvs_ConstraintType type,
                                                   Slvs_hEntity wrkpl,
                                                   double valA,
                                                   Slvs_hEntity ptA,
