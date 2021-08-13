@@ -7,6 +7,7 @@
 #include "solvespace.h"
 #define EXPORT_DLL
 #include <slvs.h>
+#include "SlvsFile/GetSYS.h"
 
 Sketch SolveSpace::SK = {};
 static System SYS;
@@ -252,3 +253,7 @@ default: dbp("bad constraint type %d", sc->type); return;
 }
 
 } /* extern "C" */
+
+System &SlvsFile::GetSYS() {
+    return SYS;
+}
