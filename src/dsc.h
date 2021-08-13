@@ -337,6 +337,12 @@ public:
         n = elemsAllocated = 0;
     }
 
+    void Empty() {
+        for(int i = 0; i < n; i++)
+            elem[i].~T();
+        n = 0;
+    }
+
     void RemoveTagged() {
         auto newEnd = std::remove_if(this->begin(), this->end(), [](T &t) {
             if(t.tag) {
@@ -596,6 +602,14 @@ public:
         if(elem) ::operator delete[](elem);
         elem = NULL;
         elemsAllocated = n = 0;
+    }
+
+    void Empty() {
+        for(int i = 0; i < n; i++) {
+            elem[i].Clear();
+            elem[i].~T();
+        }
+        n = 0;
     }
 
 };
