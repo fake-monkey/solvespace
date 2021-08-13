@@ -27,6 +27,11 @@ static void *CheckMalloc(size_t n)
     return r;
 }
 
+uint32_t GetID() {
+    static uint32_t id = 1;
+    return id++;
+}
+
 /*-----------------------------------------------------------------------------
  * An example of a constraint in 3d. We create a single group, with some
  * entities and constraints.
@@ -249,21 +254,148 @@ void Example2d()
     }
 }
 
-int main()
-{
-    sys.param      = CheckMalloc(50*sizeof(sys.param[0]));
-    sys.entity     = CheckMalloc(50*sizeof(sys.entity[0]));
-    sys.constraint = CheckMalloc(50*sizeof(sys.constraint[0]));
+void Example2dEquilateralTriangle() {
+    Slvs_hGroup g;
+    double qw, qx, qy, qz;
+    Slvs_hParam w, x, y, z;
 
-    sys.failed  = CheckMalloc(50*sizeof(sys.failed[0]));
-    sys.faileds = 50;
+    g = 1;
+    /* First, we create our workplane. Its origin corresponds to the origin
+     * of our base frame (x y z) = (0 0 0) */
+    x                          = GetID();
+    sys.param[sys.params++]    = Slvs_MakeParam(x, g, 0.0);
+    y                          = GetID();
+    sys.param[sys.params++]    = Slvs_MakeParam(y, g, 0.0);
+    z                          = GetID();
+    sys.param[sys.params++]    = Slvs_MakeParam(z, g, 0.0);
+    Slvs_hEntity origin3d        = GetID();
+    sys.entity[sys.entities++] = Slvs_MakePoint3d(origin3d, g, x, y, z);
+    /* and it is parallel to the xy plane, so it has basis vectors (1 0 0)
+     * and (0 1 0). */
+    Slvs_MakeQuaternion(1, 0, 0, 0, 1, 0, &qw, &qx, &qy, &qz);
+    w                          = GetID();
+    sys.param[sys.params++]    = Slvs_MakeParam(w, g, qw);
+    x                          = GetID();
+    sys.param[sys.params++]    = Slvs_MakeParam(x, g, qx);
+    y                          = GetID();
+    sys.param[sys.params++]    = Slvs_MakeParam(y, g, qy);
+    z                          = GetID();
+    sys.param[sys.params++]    = Slvs_MakeParam(z, g, qz);
+    Slvs_hEntity normal        = GetID();
+    sys.entity[sys.entities++] = Slvs_MakeNormal3d(normal, g, w, x, y, z);
 
-    /*Example3d();*/
-    for(;;) {
-        Example2d();
-        sys.params = sys.constraints = sys.entities = 0;
-        break;
+    Slvs_hEntity wrkpl         = GetID();
+    sys.entity[sys.entities++] = Slvs_MakeWorkplane(wrkpl, g, origin3d, normal);
+
+    x                        = GetID();
+    sys.param[sys.params++]  = Slvs_MakeParam(x, g, 0.0);
+    y                        = GetID();
+    sys.param[sys.params++]  = Slvs_MakeParam(y, g, 0.0);
+    Slvs_hEntity origin2d    = GetID();
+    sys.entity[sys.entities++] = Slvs_MakePoint2d(origin2d, g, wrkpl, x, y);
+
+    g = 2;
+
+    x                       = GetID();
+    sys.param[sys.params++] = Slvs_MakeParam(x, g, 0.0);
+    y                       = GetID();
+    sys.param[sys.params++]  = Slvs_MakeParam(y, g, 10.0);
+    Slvs_hEntity p1    = GetID();
+    sys.entity[sys.entities++] = Slvs_MakePoint2d(p1, g, wrkpl, x, y);
+
+    x                        = GetID();
+    sys.param[sys.params++]  = Slvs_MakeParam(x, g, 2);
+    y                        = GetID();
+    sys.param[sys.params++]  = Slvs_MakeParam(y, g, -5);
+    Slvs_hEntity p2          = GetID();
+    sys.entity[sys.entities++] = Slvs_MakePoint2d(p2, g, wrkpl, x, y);
+
+    x                        = GetID();
+    sys.param[sys.params++]  = Slvs_MakeParam(x, g, -4);
+    y                        = GetID();
+    sys.param[sys.params++]  = Slvs_MakeParam(y, g, -3);
+    Slvs_hEntity p3          = GetID();
+    sys.entity[sys.entities++] = Slvs_MakePoint2d(p3, g, wrkpl, x, y);
+
+    Slvs_hEntity L1          = GetID();
+    sys.entity[sys.entities++] = Slvs_MakeLineSegment(L1, g, wrkpl, p2, p3);
+    Slvs_hEntity L2          = GetID();
+    sys.entity[sys.entities++] = Slvs_MakeLineSegment(L2, g, wrkpl, p1, p3);
+    Slvs_hEntity L3          = GetID();
+    sys.entity[sys.entities++] = Slvs_MakeLineSegment(L3, g, wrkpl, p1, p2);
+
+    x                        = GetID();
+    sys.param[sys.params++]  = Slvs_MakeParam(x, g, 23.0);
+    Slvs_hEntity radius = GetID();
+    sys.entity[sys.entities++] = Slvs_MakeDistance(radius, g, wrkpl, x);
+
+    Slvs_hEntity circle = GetID();
+    sys.entity[sys.entities++] = Slvs_MakeCircle(circle, g, wrkpl, origin2d, normal, radius);
+
+    sys.constraint[sys.constraints++] =
+        Slvs_MakeConstraint(GetID(), g, SLVS_C_PT_ON_CIRCLE, wrkpl, 0.0, p1, 0, circle, 0);
+    sys.constraint[sys.constraints++] =
+        Slvs_MakeConstraint(GetID(), g, SLVS_C_PT_ON_CIRCLE, wrkpl, 0.0, p2, 0, circle, 0);
+    sys.constraint[sys.constraints++] =
+        Slvs_MakeConstraint(GetID(), g, SLVS_C_PT_ON_CIRCLE, wrkpl, 0.0, p3, 0, circle, 0);
+
+    sys.constraint[sys.constraints++] =
+        Slvs_MakeConstraint(GetID(), g, SLVS_C_DIAMETER, wrkpl, 100, 0, 0, circle, 0);
+    sys.constraint[sys.constraints++] =
+        Slvs_MakeConstraint(GetID(), g, SLVS_C_HORIZONTAL, wrkpl, 100, 0, 0, L1, 0);
+
+    sys.constraint[sys.constraints++] =
+        Slvs_MakeConstraint(GetID(), g, SLVS_C_EQUAL_LENGTH_LINES, wrkpl, 100, 0, 0, L1, L2);
+    sys.constraint[sys.constraints++] =
+        Slvs_MakeConstraint(GetID(), g, SLVS_C_EQUAL_LENGTH_LINES, wrkpl, 100, 0, 0, L1, L3);
+
+    sys.calculateFaileds = 1;
+
+    /* And solve. */
+    Slvs_Solve(&sys, g);
+
+        if(sys.result == SLVS_RESULT_OKAY) {
+        printf("solved okay\n");
+        printf("line from (%.3f %.3f) to (%.3f %.3f)\n", sys.param[7].val, sys.param[8].val,
+               sys.param[9].val, sys.param[10].val);
+
+        printf("arc center (%.3f %.3f) start (%.3f %.3f) finish (%.3f %.3f)\n", sys.param[11].val,
+               sys.param[12].val, sys.param[13].val, sys.param[14].val, sys.param[15].val,
+               sys.param[16].val);
+
+        printf("circle center (%.3f %.3f) radius %.3f\n", sys.param[17].val, sys.param[18].val,
+               sys.param[19].val);
+        printf("%d DOF\n", sys.dof);
+    } else {
+        int i;
+        printf("solve failed: problematic constraints are:");
+        for(i = 0; i < sys.faileds; i++) {
+            printf(" %d", sys.failed[i]);
+        }
+        printf("\n");
+        if(sys.result == SLVS_RESULT_INCONSISTENT) {
+            printf("system inconsistent\n");
+        } else {
+            printf("system nonconvergent\n");
+        }
     }
+}
+
+int demo_main() {
+    sys.param      = (Slvs_Param *)CheckMalloc(100*sizeof(sys.param[0]));
+    sys.entity     = (Slvs_Entity *)CheckMalloc(100 * sizeof(sys.entity[0]));
+    sys.constraint = (Slvs_Constraint *)CheckMalloc(100 * sizeof(sys.constraint[0]));
+
+    sys.failed  = (Slvs_hConstraint *)CheckMalloc(100 * sizeof(sys.failed[0]));
+    sys.faileds = 100;
+
+    Example2dEquilateralTriangle();
+    /*Example3d();*/
+    //for(;;) {
+    //    Example2d();
+    //    sys.params = sys.constraints = sys.entities = 0;
+    //    break;
+    //}
     return 0;
 }
 
