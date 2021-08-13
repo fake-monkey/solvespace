@@ -369,13 +369,13 @@ int SlvsFile::SlvsLibClass::StrStartsWith(const char *str, const char *start) {
     return memcmp(str, start, strlen(start)) == 0;
 }
 
-void SlvsFile::SlvsLibClass::GenerateSystem() {
+void SlvsFile::SlvsLibClass::FirstGenerateSystem() {
     GetSYS().Empty();
-    const hGroup &shg = *SK.groupOrder.Last();
-    for(auto &e : SK.entity) {
-        if(e.group.v == shg.v) {
+    const hGroup &freeG = *SK.groupOrder.Last();
+    for(const EntityBase &e : SK.entity) {
+        if(e.group.v == freeG.v) {
             for(size_t i = 0; i < 8; i++) {
-                hParam &hp = e.param[i];
+                const hParam &hp = e.param[i];
                 if(hp.v != 0) {
                     Param &p = *SK.param.FindById(hp);
                     GetSYS().param.Add(&p);
@@ -384,7 +384,7 @@ void SlvsFile::SlvsLibClass::GenerateSystem() {
         }
     }
     IdList<Param, hParam> params = {};
-    for(auto &c : SK.constraint) {
+    for(ConstraintBase &c : SK.constraint) {
         c.Generate(&params);
         if(!params.IsEmpty()) {
             for(Param &p : params) {
@@ -398,11 +398,26 @@ void SlvsFile::SlvsLibClass::GenerateSystem() {
     }
 }
 
-SolveResult SlvsFile::SlvsLibClass::Solve() {
+void SlvsFile::SlvsLibClass::ReGenerateSystem() {
     for(Param &p : SK.param) {
         p.known = false;
     }
-    GenerateSystem();
+    for(Param &p : GetSYS().param) {
+        p.known = false;
+    }
+    GetSYS().eq.Empty();
+    IdList<Param, hParam> params = {};
+    for(ConstraintBase &c : SK.constraint) {
+        c.Generate(&params);
+        if(!params.IsEmpty()) {
+            params.Clear();
+            c.ModifyToSatisfy();
+        }
+    }
+}
+
+SolveResult SlvsFile::SlvsLibClass::Solve() {
+    ReGenerateSystem();
     Group g            = {};
     hGroup &hg         = *SK.groupOrder.Last();
     g.h.v              = hg.v;
@@ -414,8 +429,8 @@ SolveResult SlvsFile::SlvsLibClass::Solve() {
 void SlvsFile::SlvsLibClass::Load(const char *filename) {
     LoadFromFile(Platform::Path::From(string(filename)));
     SK.groupOrder.Empty();
-    for(auto &e : SK.entity) {
-        SolveSpace::hGroup curHG = e.group;
+    for(const EntityBase &e : SK.entity) {
+        const SolveSpace::hGroup& curHG = e.group;
 
         bool isHaveG = false;
         for(const hGroup &g : SK.groupOrder) {
@@ -441,9 +456,10 @@ void SlvsFile::SlvsLibClass::Load(const char *filename) {
             break;
         }
     }
+    SlvsFile_Assert(nullptr != OXYwrkpl, "Can not find the XOY workplane."); 
     EntityBase &OXYpoint = *SK.GetEntity(OXYwrkpl->point[0]);
     EntityBase &OXYnormal = *SK.GetEntity(OXYwrkpl->normal);
-    hEntity hPoint_copy, hNormal_copy;
+    hEntity hPoint_copy = {0}, hNormal_copy = {0};
     for(EntityBase &e : SK.entity) {
         if(EntityBase::Type::WORKPLANE == e.type && e.group.v == g2nd.v) {
             e.group.v = g1st.v;
@@ -452,6 +468,7 @@ void SlvsFile::SlvsLibClass::Load(const char *filename) {
             break;
         }
     }
+    SlvsFile_Assert(0 != hPoint_copy.v, "Can not find the workplane of sketch.");
     EntityBase &point_copy = *SK.GetEntity(hPoint_copy);
     point_copy.group.v     = g1st.v;
     point_copy.type        = EntityBase::Type::POINT_IN_3D;
@@ -462,6 +479,8 @@ void SlvsFile::SlvsLibClass::Load(const char *filename) {
     normal_copy.type        = EntityBase::Type::NORMAL_IN_3D;
     for(int i = 0; i < 4; i++)
         normal_copy.param[i] = OXYnormal.param[i];
+
+    FirstGenerateSystem();
 }
 
 void SlvsFile::SlvsLibClass::ChangeConstraintVal(uint32_t v, double val){

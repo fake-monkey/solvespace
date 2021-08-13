@@ -26,10 +26,12 @@ void test_file_main() {
         {"fillet", 0x00000012, 100},
         {"fillet", 0x00000014, 20},
         {"center_rectangle", 0x00000010, 100},
-        {"XYDis", 0x00000008, 80}
+        {"XYDis", 0x00000008, 80},
+        {"angle_test", 0x00000007, 45},
     };
-    const TestTable& cur = tt[6];
+    const TestTable& cur = tt[7];
     string allname       = R"(D:\Liu_Xin_files\SOLVESPACE\save_file\)" + cur.name + ".slvs";
+    cout << allname << "\n\n";
     ssui.Load(allname.c_str());
     SolveSpace::SolveResult a = ssui.Solve();
     cout << "result 1: " << (uint32_t)a << "\n\n";

@@ -92,7 +92,8 @@ public:
     void LoadUsingTable(const Platform::Path &filename, char *key, char *val);
     bool LoadFromFile(const Platform::Path &filename, bool canCancel = false);
     int StrStartsWith(const char *str, const char *start);
-    void GenerateSystem();
+    void FirstGenerateSystem();
+    void ReGenerateSystem();
     SolveResult Solve();
     void Load(const char *filename);
     void ChangeConstraintVal(uint32_t v, double val);
@@ -232,7 +233,7 @@ extern "C" {
         REDUNDANT_DIDNT_CONVERGE = 12,
         TOO_MANY_UNKNOWNS        = 20
     } SlvsFile_SolveResult;
-    typedef struct
+    //typedef struct
 #ifdef __cplusplus
 }
 #endif
