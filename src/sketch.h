@@ -437,6 +437,7 @@ public:
     // The only types that have their own params are points, normals,
     // and directions.
     hParam      param[8];
+    bool        construction;
 
     // Transformed points/normals/distances have their numerical base
     Vector      numPoint;
@@ -541,7 +542,7 @@ public:
     // the base class, MSVC2013 will default-initialize it, leaving
     // POD members with indeterminate value.
     Entity() : EntityBase({}), forceHidden(), actPoint(), actNormal(),
-        actDistance(), actVisible(), style(), construction(),
+        actDistance(), actVisible(), style(),
         beziers(), edges(), edgesChordTol(), screenBBox(), screenBBoxValid() {};
 
     // A linked entity that was hidden in the source file ends up hidden
@@ -558,7 +559,6 @@ public:
     bool        actVisible;
 
     hStyle      style;
-    bool        construction;
 
     SBezierList beziers;
     SEdgeList   edges;
@@ -696,6 +696,7 @@ public:
 
     bool        reference;  // a ref dimension, that generates no eqs
     std::string comment;    // since comments are represented as constraints
+    std::string name;
 
     bool Equals(const ConstraintBase &c) const {
         return type == c.type && group == c.group && workplane == c.workplane &&
