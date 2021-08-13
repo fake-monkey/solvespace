@@ -6,7 +6,9 @@
 #include "slvs.h"
 #pragma comment(lib, "../bin/Debug/slvs.lib")
 
-extern int demo_main();
+extern "C" {
+int demo_main();
+}
 
 static SlvsFile::SlvsLibClass ssui = {};
 using std::cout;
@@ -47,7 +49,7 @@ void test_file_main() {
 }
 
 int main() {
-    //demo_main();
-    test_file_main();
+    demo_main();
+    //test_file_main();
     return 0;
 }

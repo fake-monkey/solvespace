@@ -354,17 +354,17 @@ void Example2dEquilateralTriangle() {
     /* And solve. */
     Slvs_Solve(&sys, g);
 
-        if(sys.result == SLVS_RESULT_OKAY) {
+    if(sys.result == SLVS_RESULT_OKAY) {
         printf("solved okay\n");
         printf("line from (%.3f %.3f) to (%.3f %.3f)\n", sys.param[7].val, sys.param[8].val,
-               sys.param[9].val, sys.param[10].val);
+                sys.param[9].val, sys.param[10].val);
 
         printf("arc center (%.3f %.3f) start (%.3f %.3f) finish (%.3f %.3f)\n", sys.param[11].val,
-               sys.param[12].val, sys.param[13].val, sys.param[14].val, sys.param[15].val,
-               sys.param[16].val);
+                sys.param[12].val, sys.param[13].val, sys.param[14].val, sys.param[15].val,
+                sys.param[16].val);
 
         printf("circle center (%.3f %.3f) radius %.3f\n", sys.param[17].val, sys.param[18].val,
-               sys.param[19].val);
+                sys.param[19].val);
         printf("%d DOF\n", sys.dof);
     } else {
         int i;
