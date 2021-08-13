@@ -35,11 +35,14 @@ set(libslvs_SOURCES
     constraint.cpp
     constrainteq.cpp
     system.cpp
-    platform/platform.cpp)
+    platform/platform.cpp
+    SlvsFile/SlvsFile.cpp)
 
 set(libslvs_HEADERS
     solvespace.h
-    platform/platform.h)
+    platform/platform.h
+    SlvsFile/SlvsFile.h
+    SlvsFile/GetSYS.h)
 
 add_library(slvs SHARED
     ${libslvs_SOURCES}
