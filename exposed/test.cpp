@@ -37,8 +37,8 @@ void test_file_main() {
     ssui.Load(allname.c_str());
     SolveSpace::SolveResult a = ssui.Solve();
     cout << "result 1: " << (uint32_t)a << "\n\n";
-    uint32_t v = cur.hCv;
-    ssui.ChangeConstraintVal(v, cur.val);
+    hConstraint h = {cur.hCv};
+    ssui.GetSK().GetConstraint(h)->valA = cur.val;
     a = ssui.Solve();
     cout << "result 2: " << (uint32_t)a << "\n\n";
     for(Param& p : ssui.GetSK().param) {
