@@ -246,7 +246,7 @@ void SlvsFile::SlvsLibClass::LoadUsingTable(const Platform::Path &filename, char
 
             case 'i': break;
 
-            default: SlvsFile_Assert(false, "Unexpected value format");
+            default: SlvsFile_ConditionThrow(false, "Unexpected value format");
             }
             break;
         }
@@ -263,7 +263,7 @@ bool SlvsFile::SlvsLibClass::LoadFromFile(const Platform::Path &filename, bool c
 
     fh = OpenFile(filename, "rb");
     if(!fh) {
-        SlvsFile_Error(ssprintf("Couldn't read from file '%s'", filename.raw.c_str()));
+        SlvsFile_Throw(ssprintf("Couldn't read from file '%s'", filename.raw.c_str()));
         return false;
     }
 
@@ -343,13 +343,13 @@ bool SlvsFile::SlvsLibClass::LoadFromFile(const Platform::Path &filename, bool c
     fclose(fh);
 
     if(fileIsEmpty) {
-        SlvsFile_Error(_("The file is empty. It may be corrupt."));
+        SlvsFile_Throw(_("The file is empty. It may be corrupt."));
         return false;
         // NewFile();
     }
 
     if(fileLoadError) {
-        SlvsFile_Error(_("Unrecognized data in file. This file may be corrupt, or "
+        SlvsFile_Throw(_("Unrecognized data in file. This file may be corrupt, or "
                          "from a newer version of the program."));
         // At least leave the program in a non-crashing state.
         if(SK.group.IsEmpty()) {
@@ -456,7 +456,7 @@ void SlvsFile::SlvsLibClass::Load(const char *filename) {
             break;
         }
     }
-    SlvsFile_Assert(nullptr != OXYwrkpl, "Can not find the XOY workplane."); 
+    SlvsFile_ConditionThrow(nullptr != OXYwrkpl, "Can not find the XOY workplane."); 
     EntityBase &OXYpoint = *SK.GetEntity(OXYwrkpl->point[0]);
     EntityBase &OXYnormal = *SK.GetEntity(OXYwrkpl->normal);
     hEntity hPoint_copy = {0}, hNormal_copy = {0};
@@ -468,7 +468,7 @@ void SlvsFile::SlvsLibClass::Load(const char *filename) {
             break;
         }
     }
-    SlvsFile_Assert(0 != hPoint_copy.v, "Can not find the workplane of sketch.");
+    SlvsFile_ConditionThrow(0 != hPoint_copy.v, "Can not find the workplane of sketch.");
     EntityBase &point_copy = *SK.GetEntity(hPoint_copy);
     point_copy.group.v     = g1st.v;
     point_copy.type        = EntityBase::Type::POINT_IN_3D;
@@ -483,16 +483,153 @@ void SlvsFile::SlvsLibClass::Load(const char *filename) {
     FirstGenerateSystem();
 }
 
-void SlvsFile::SlvsLibClass::ChangeConstraintVal(uint32_t v, double val){
-    hConstraint hc = {};
-    hc.v           = v;
-    ConstraintBase &c = *SK.GetConstraint(hc);
-    c.valA            = val;
+static SlvsFile::SlvsLibClass SLC = {};
+static SlvsFile::SlvsFileException LastException;
+
+static inline Slvs_Exception ToExceptionResult(const SlvsFile::SlvsFileException &ex) {
+    Slvs_Exception r = {};
+    LastException    = ex;
+    r.hadThrow    = true;
+    r.message        = const_cast<char *>(LastException.Message().c_str());
+    r.file           = const_cast<char *>(LastException.File().c_str());
+    r.line           = LastException.Line();
+    r.function       = const_cast<char *>(LastException.Function().c_str());
+    r.condition      = const_cast<char *>(LastException.Condition().c_str());
+    return r;
 }
 
-const char *SlvsFile::SlvsLibClass::GetConstraintName(uint32_t v) {
-    hConstraint hc    = {};
-    hc.v              = v;
-    ConstraintBase &c = *SK.GetConstraint(hc);
-    return c.name.c_str();
+static inline Slvs_Exception ToNoException() {
+    Slvs_Exception r = {};
+    r.hadThrow        = false;
+    r.message     = nullptr;
+    r.file        = nullptr;
+    r.line        = -1;
+    r.function    = nullptr;
+    r.condition   = nullptr;
+    return r;
 }
+
+static inline double ToParam(const Param &p) {
+    return p.val;
+}
+
+static inline Slvs_Entity ToEntity(const EntityBase &e) {
+    Slvs_Entity se = {};
+    se.h           = e.h.v;
+    se.group       = e.group.v;
+    se.type        = (Slvs_EntityType)(uint32_t)e.type;
+    se.wrkpl       = e.workplane.v;
+    for(int i = 0; i < 4; i++)
+        se.point[i] = e.point[i].v;
+    se.normal = e.normal.v;
+    se.distance = e.distance.v;
+    for(int i = 0; i < 4; i++)
+        se.param[i] = e.param[i].v;
+    se.construction = e.construction ? 1 : 0;
+    return se;
+}
+
+static inline Slvs_Constraint ToConstraint(const ConstraintBase &c) {
+    Slvs_Constraint sc = {};
+    sc.h           = c.h.v;
+    sc.group       = c.group.v;
+    sc.type        = (Slvs_ConstraintType)(uint32_t)c.type;
+    sc.wrkpl       = c.workplane.v;
+    sc.valA            = c.valA;
+    sc.ptA             = c.ptA.v;
+    sc.ptB             = c.ptB.v;
+    sc.entityA         = c.entityA.v;
+    sc.entityB         = c.entityB.v;
+    sc.entityC         = c.entityC.v;
+    sc.entityD         = c.entityD.v;
+    sc.other           = c.other ? 1 : 0;
+    sc.other2          = c.other2 ? 1 : 0;
+    sc.name            = const_cast<char *>(c.name.c_str());
+    return sc;
+}
+
+extern "C" {
+
+Slvs_Exception Slvs_Load(char *filename) {
+    try {
+        SLC.Load(filename);
+        return ToNoException();
+    } catch(SlvsFile::SlvsFileException &ex) {
+        return ToExceptionResult(ex);
+    }
+}
+
+Slvs_Exception Slvs_File_Solve(Slvs_SolveResult *r) {
+    try {
+        SolveResult sr = SLC.Solve();
+        *r             = (Slvs_SolveResult)(uint32_t)sr;
+        return ToNoException();
+    } catch(SlvsFile::SlvsFileException &ex) {
+        return ToExceptionResult(ex);
+    }
+}
+
+Slvs_Exception Slvs_GetParam(double *val, Slvs_hParam v) {
+    try {
+        hParam h = {v};
+        Param *p = SK.param.FindByIdNoOops(h);
+        SlvsFile_ConditionThrow(p != nullptr, "Can not find the param.");
+        *val = ToParam(*p);
+        return ToNoException();
+    } catch(SlvsFile::SlvsFileException &ex) {
+        return ToExceptionResult(ex);
+    }
+}
+
+Slvs_Exception Slvs_GetEntity(Slvs_Entity *e, Slvs_hEntity v) {
+    try {
+        hEntity h = {v};
+        EntityBase *eb = SK.entity.FindByIdNoOops(h);
+        SlvsFile_ConditionThrow(eb != nullptr, "Can not find the entity.");
+        *e = ToEntity(*eb);
+        return ToNoException();
+    } catch(SlvsFile::SlvsFileException &ex) {
+        return ToExceptionResult(ex);
+    }
+}
+
+Slvs_Exception Slvs_GetConstraint(Slvs_Constraint *s, Slvs_hConstraint v) {
+    try {
+        hConstraint h      = {v};
+        ConstraintBase *cb = SK.constraint.FindByIdNoOops(h);
+        SlvsFile_ConditionThrow(cb != nullptr, "Can not find the constraint.");
+        *s       = ToConstraint(*cb);
+        return ToNoException();
+    } catch(SlvsFile::SlvsFileException &ex) {
+        return ToExceptionResult(ex);
+    }
+}
+
+Slvs_Exception Slvs_SetConstraintVal(Slvs_Constraint *s, Slvs_hConstraint v, double val) {
+    try {
+        hConstraint h = {v};
+        ConstraintBase *cb = SK.constraint.FindByIdNoOops(h);
+        SlvsFile_ConditionThrow(cb != nullptr, "Can not find the constraint.");
+        cb->valA = val;
+        *s = ToConstraint(*cb);
+        return ToNoException();
+    } catch(SlvsFile::SlvsFileException &ex) {
+        return ToExceptionResult(ex);
+    }
+}
+
+}
+
+//void SlvsFile::SlvsLibClass::ChangeConstraintVal(uint32_t v, double val){
+//    hConstraint hc = {};
+//    hc.v           = v;
+//    ConstraintBase &c = *SK.GetConstraint(hc);
+//    c.valA            = val;
+//}
+//
+//const char *SlvsFile::SlvsLibClass::GetConstraintName(uint32_t v) {
+//    hConstraint hc    = {};
+//    hc.v              = v;
+//    ConstraintBase &c = *SK.GetConstraint(hc);
+//    return c.name.c_str();
+//}

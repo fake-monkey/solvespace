@@ -1,7 +1,7 @@
 #pragma once
 #include "solvespace.h"
-#include "slvs.h"
 #include "SlvsFile/GetSYS.h"
+#include <slvs.h>
 
 #ifdef _DEBUG
 #   define DebugDLL DLL
@@ -11,29 +11,23 @@
 
 namespace SlvsFile {
     using std::string;
-class DebugDLL Exception {
-public:
-    Exception(const std::string &message) : _message(message) {
-    }
-    const string &Message() const {
-        return _message;
-    }
 
-private:
-    string _message;
-};
-
-class DebugDLL SlvsFileException : Exception {
+class DebugDLL SlvsFileException {
 public:
+    SlvsFileException() : _message(""), _file(""), _line(-1), _function(""), _condition("") {
+    }
     SlvsFileException(const char *message)
-        : Exception(message), _file(""), _line(-1), _function(""), _condition("") {
+        : _message(message), _file(""), _line(-1), _function(""), _condition("") {
     }
     SlvsFileException(const char *file, int line, const char *function, const string &message)
-        : Exception(message), _file(file), _line(line), _function(function), _condition("") {
+        : _message(message), _file(file), _line(line), _function(function), _condition("") {
     }
     SlvsFileException(const char *file, int line, const char *function, const char *condition,
                       const string &message)
-        : Exception(message), _file(file), _line(line), _function(function), _condition(condition) {
+        : _message(message), _file(file), _line(line), _function(function), _condition(condition) {
+    }
+    const string &Message() const {
+        return _message;
     }
     const string &File() const {
         return _file;
@@ -49,6 +43,7 @@ public:
     }
 
 private:
+    string _message;
     string _file;
     int _line;
     string _function;
@@ -56,10 +51,7 @@ private:
 };
 
 class DebugDLL SlvsLibClass {
-public:
-    ~SlvsLibClass() {
-        ClearExisting();
-    }
+private:
     typedef struct {
         Group g;
         Request r;
@@ -94,17 +86,16 @@ public:
     int StrStartsWith(const char *str, const char *start);
     void FirstGenerateSystem();
     void ReGenerateSystem();
-    SolveResult Solve();
-    void Load(const char *filename);
-    void ChangeConstraintVal(uint32_t v, double val);
-    const char* GetConstraintName(uint32_t v);
+
+public:
+    ~SlvsLibClass() {
+        ClearExisting();
+    }
     Sketch &GetSK() {
         return SK;
     }
-    Param &GetSKParam(uint32_t hpv) {
-        hParam hp = { hpv };
-        return *SK.GetParam(hp);
-    }
+    SolveResult Solve();
+    void Load(const char *filename);
 };
 
 // The original definition of this structure is in file.cpp.
@@ -136,10 +127,10 @@ struct SAVEDptr {
 };
 } // namespace SlvsFile
 
-#define SlvsFile_Error(message) \
+#define SlvsFile_Throw(message) \
     throw SlvsFile::SlvsFileException(__FILE__, __LINE__, __FUNCTION__, message);
 
-#define SlvsFile_Assert(condition, message) \
+#define SlvsFile_ConditionThrow(condition, message) \
     do { \
         if((condition) == false) { \
             throw SlvsFile::SlvsFileException(__FILE__, __LINE__, __FUNCTION__, #condition, \
@@ -150,90 +141,32 @@ struct SAVEDptr {
 #ifdef __cplusplus
 extern "C" {
 #endif
-    typedef struct {
-        char *message;
-    } SlvsFile_Exception;
-    typedef enum {
-        POINT_IN_3D            = 2000,
-        POINT_IN_2D            = 2001,
-        POINT_N_TRANS          = 2010,
-        POINT_N_ROT_TRANS      = 2011,
-        POINT_N_COPY           = 2012,
-        POINT_N_ROT_AA         = 2013,
-        POINT_N_ROT_AXIS_TRANS = 2014,
 
-        NORMAL_IN_3D    = 3000,
-        NORMAL_IN_2D    = 3001,
-        NORMAL_N_COPY   = 3010,
-        NORMAL_N_ROT    = 3011,
-        NORMAL_N_ROT_AA = 3012,
-
-        DISTANCE        = 4000,
-        DISTANCE_N_COPY = 4001,
-
-        FACE_NORMAL_PT        = 5000,
-        FACE_XPROD            = 5001,
-        FACE_N_ROT_TRANS      = 5002,
-        FACE_N_TRANS          = 5003,
-        FACE_N_ROT_AA         = 5004,
-        FACE_ROT_NORMAL_PT    = 5005,
-        FACE_N_ROT_AXIS_TRANS = 5006,
-
-        WORKPLANE      = 10000,
-        LINE_SEGMENT   = 11000,
-        CUBIC          = 12000,
-        CUBIC_PERIODIC = 12001,
-        CIRCLE         = 13000,
-        ARC_OF_CIRCLE  = 14000,
-        TTF_TEXT       = 15000,
-        IMAGE          = 16000
-    } SlvsFile_EntityType;
-    typedef enum {
-        POINTS_COINCIDENT   = 20,
-        PT_PT_DISTANCE      = 30,
-        PT_PLANE_DISTANCE   = 31,
-        PT_LINE_DISTANCE    = 32,
-        PT_FACE_DISTANCE    = 33,
-        PROJ_PT_DISTANCE    = 34,
-        PT_IN_PLANE         = 41,
-        PT_ON_LINE          = 42,
-        PT_ON_FACE          = 43,
-        EQUAL_LENGTH_LINES  = 50,
-        LENGTH_RATIO        = 51,
-        EQ_LEN_PT_LINE_D    = 52,
-        EQ_PT_LN_DISTANCES  = 53,
-        EQUAL_ANGLE         = 54,
-        EQUAL_LINE_ARC_LEN  = 55,
-        LENGTH_DIFFERENCE   = 56,
-        SYMMETRIC           = 60,
-        SYMMETRIC_HORIZ     = 61,
-        SYMMETRIC_VERT      = 62,
-        SYMMETRIC_LINE      = 63,
-        AT_MIDPOINT         = 70,
-        HORIZONTAL          = 80,
-        VERTICAL            = 81,
-        DIAMETER            = 90,
-        PT_ON_CIRCLE        = 100,
-        SAME_ORIENTATION    = 110,
-        ANGLE               = 120,
-        PARALLEL            = 121,
-        PERPENDICULAR       = 122,
-        ARC_LINE_TANGENT    = 123,
-        CUBIC_LINE_TANGENT  = 124,
-        CURVE_CURVE_TANGENT = 125,
-        EQUAL_RADIUS        = 130,
-        WHERE_DRAGGED       = 200,
-
-        COMMENT = 1000
-    } SlvsFile_ConstraintType;
     typedef enum {
         OKAY                     = 0,
         DIDNT_CONVERGE           = 10,
         REDUNDANT_OKAY           = 11,
         REDUNDANT_DIDNT_CONVERGE = 12,
         TOO_MANY_UNKNOWNS        = 20
-    } SlvsFile_SolveResult;
-    //typedef struct
+
+    } Slvs_SolveResult;
+
+    typedef struct {
+        bool hadThrow;
+        char *message;
+        char *file;
+        int line;
+        char *function;
+        char *condition;
+    } Slvs_Exception;
+
+    Slvs_Exception Slvs_Load(char *filename);
+    Slvs_Exception Slvs_File_Solve(Slvs_SolveResult *r);
+    Slvs_Exception Slvs_GetParam(double *val, Slvs_hParam v);
+    Slvs_Exception Slvs_GetEntity(Slvs_Entity *e, Slvs_hEntity v);
+    Slvs_Exception Slvs_GetConstraint(Slvs_Constraint *s, Slvs_hConstraint v);
+    Slvs_Exception Slvs_SetConstraintVal(Slvs_Constraint *s, Slvs_hConstraint v, double val);
+
 #ifdef __cplusplus
 }
 #endif
