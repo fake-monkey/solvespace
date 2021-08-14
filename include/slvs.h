@@ -94,6 +94,8 @@ typedef struct {
     Slvs_hEntity    distance;
 
     Slvs_hParam     param[4];
+
+    int             construction;
 } Slvs_Entity;
 
 typedef enum {
@@ -153,6 +155,8 @@ typedef struct {
 
     int                 other;
     int                 other2;
+
+    char                *name;
 } Slvs_Constraint;
 
 
