@@ -96,6 +96,7 @@ typedef struct {
     Slvs_hParam     param[4];
 
     int             construction;
+    uint32_t        extend;
 } Slvs_Entity;
 
 typedef enum {

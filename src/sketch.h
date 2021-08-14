@@ -438,6 +438,7 @@ public:
     // and directions.
     hParam      param[8];
     bool        construction;
+    uint32_t    extend;
 
     // Transformed points/normals/distances have their numerical base
     Vector      numPoint;
