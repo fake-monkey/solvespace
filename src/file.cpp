@@ -167,7 +167,7 @@ const SolveSpaceUI::SaveTable SolveSpaceUI::SAVED[] = {
     { 'e',  "Entity.param[5].v",        'x',    &(SS.sv.e.param[5].v)         },
     { 'e',  "Entity.param[6].v",        'x',    &(SS.sv.e.param[6].v)         },
     { 'e',  "Entity.param[7].v",        'x',    &(SS.sv.e.param[7].v)         },
-    { 'e',  "Entity.extend",            'x',    &(SS.sv,e.extend)             },
+    { 'e',  "Entity.extend",            'x',    &(SS.sv.e.extend)             },
     { 'e',  "Entity.actPoint.x",        'f',    &(SS.sv.e.actPoint.x)         },
     { 'e',  "Entity.actPoint.y",        'f',    &(SS.sv.e.actPoint.y)         },
     { 'e',  "Entity.actPoint.z",        'f',    &(SS.sv.e.actPoint.z)         },

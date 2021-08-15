@@ -160,6 +160,14 @@ typedef struct {
     char                *name;
 } Slvs_Constraint;
 
+/* The solver indicates whether the solution succeeded. */
+typedef enum {
+    SLVS_RESULT_OKAY                     = 0,
+    SLVS_RESULT_DIDNT_CONVERGE           = 10,
+    SLVS_RESULT_REDUNDANT_OKAY           = 11,
+    SLVS_RESULT_REDUNDANT_DIDNT_CONVERGE = 12,
+    SLVS_RESULT_TOO_MANY_UNKNOWNS        = 20
+} Slvs_SolveResult;
 
 typedef struct {
     /*** INPUT VARIABLES
@@ -210,12 +218,7 @@ typedef struct {
     /* The solver indicates the number of unconstrained degrees of freedom. */
     int                 dof;
 
-    /* The solver indicates whether the solution succeeded. */
-#define SLVS_RESULT_OKAY                0
-#define SLVS_RESULT_INCONSISTENT        1
-#define SLVS_RESULT_DIDNT_CONVERGE      2
-#define SLVS_RESULT_TOO_MANY_UNKNOWNS   3
-    int                 result;
+    Slvs_SolveResult    result;
 } Slvs_System;
 
 DLL void Slvs_Solve(Slvs_System *sys, Slvs_hGroup hg);

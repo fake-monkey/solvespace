@@ -142,15 +142,6 @@ struct SAVEDptr {
 extern "C" {
 #endif
 
-    typedef enum {
-        OKAY                     = 0,
-        DIDNT_CONVERGE           = 10,
-        REDUNDANT_OKAY           = 11,
-        REDUNDANT_DIDNT_CONVERGE = 12,
-        TOO_MANY_UNKNOWNS        = 20
-
-    } Slvs_SolveResult;
-
     typedef struct {
         bool hadThrow;
         char *message;
