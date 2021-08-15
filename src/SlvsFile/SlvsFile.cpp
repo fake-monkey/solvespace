@@ -512,8 +512,12 @@ static inline Slvs_Exception ToNoException() {
     return r;
 }
 
-static inline double ToParam(const Param &p) {
-    return p.val;
+static inline Slvs_Param ToParam(const Param &p) {
+    Slvs_Param pb = {};
+    pb.h          = p.h.v;
+    pb.group      = 0;
+    pb.val        = p.val;
+    return pb;
 }
 
 static inline Slvs_Entity ToEntity(const EntityBase &e) {
@@ -552,11 +556,30 @@ static inline Slvs_Constraint ToConstraint(const ConstraintBase &c) {
     return sc;
 }
 
+static inline Slvs_System GetSystemAfterLoad() {
+    Slvs_System sys = {};
+    sys.param       = nullptr;
+    sys.params      = SK.param.n;
+    sys.entity      = nullptr;
+    sys.entities    = SK.entity.n;
+    sys.constraint  = nullptr;
+    sys.constraints = SK.constraint.n;
+    for(size_t i = 0; i < 4; i++) {
+        sys.dragged[i] = 0;
+    }
+    sys.calculateFaileds = 0;
+    sys.failed           = nullptr;
+    sys.faileds          = 0;
+    sys.dof              = 0;
+    sys.result           = SLVS_RESULT_OKAY;
+}
+
 extern "C" {
 
-Slvs_Exception Slvs_Load(char *filename) {
+Slvs_Exception Slvs_Load(Slvs_System *sys, char *filename) {
     try {
         SLC.Load(filename);
+        *sys = GetSystemAfterLoad();
         return ToNoException();
     } catch(SlvsFile::SlvsFileException &ex) {
         return ToExceptionResult(ex);
@@ -573,21 +596,21 @@ Slvs_Exception Slvs_File_Solve(Slvs_SolveResult *r) {
     }
 }
 
-Slvs_Exception Slvs_GetParam(double *val, Slvs_hParam v) {
+Slvs_Exception Slvs_GetParamByID(Slvs_Param *p, Slvs_hParam v) {
     try {
         hParam h = {v};
-        Param *p = SK.param.FindByIdNoOops(h);
-        SlvsFile_ConditionThrow(p != nullptr, "Can not find the param.");
-        *val = ToParam(*p);
+        Param *pb = SK.param.FindByIdNoOops(h);
+        SlvsFile_ConditionThrow(pb != nullptr, "Can not find the param.");
+        *p = ToParam(*pb);
         return ToNoException();
     } catch(SlvsFile::SlvsFileException &ex) {
         return ToExceptionResult(ex);
     }
 }
 
-Slvs_Exception Slvs_GetEntity(Slvs_Entity *e, Slvs_hEntity v) {
+Slvs_Exception Slvs_GetEntityByID(Slvs_Entity *e, Slvs_hEntity v) {
     try {
-        hEntity h = {v};
+        hEntity h      = {v};
         EntityBase *eb = SK.entity.FindByIdNoOops(h);
         SlvsFile_ConditionThrow(eb != nullptr, "Can not find the entity.");
         *e = ToEntity(*eb);
@@ -597,25 +620,61 @@ Slvs_Exception Slvs_GetEntity(Slvs_Entity *e, Slvs_hEntity v) {
     }
 }
 
-Slvs_Exception Slvs_GetConstraint(Slvs_Constraint *s, Slvs_hConstraint v) {
+Slvs_Exception Slvs_GetConstraintByID(Slvs_Constraint *s, Slvs_hConstraint v) {
     try {
         hConstraint h      = {v};
         ConstraintBase *cb = SK.constraint.FindByIdNoOops(h);
         SlvsFile_ConditionThrow(cb != nullptr, "Can not find the constraint.");
-        *s       = ToConstraint(*cb);
+        *s = ToConstraint(*cb);
         return ToNoException();
     } catch(SlvsFile::SlvsFileException &ex) {
         return ToExceptionResult(ex);
     }
 }
 
-Slvs_Exception Slvs_SetConstraintVal(Slvs_Constraint *s, Slvs_hConstraint v, double val) {
+Slvs_Exception Slvs_SetConstraintValByID(Slvs_Constraint * c, Slvs_hConstraint v, double val) {
     try {
-        hConstraint h = {v};
+        hConstraint h      = {v};
         ConstraintBase *cb = SK.constraint.FindByIdNoOops(h);
         SlvsFile_ConditionThrow(cb != nullptr, "Can not find the constraint.");
         cb->valA = val;
-        *s = ToConstraint(*cb);
+        *c       = ToConstraint(*cb);
+        return ToNoException();
+    } catch(SlvsFile::SlvsFileException &ex) {
+        return ToExceptionResult(ex);
+    }
+}
+
+Slvs_Exception Slvs_GetParamByIndex(Slvs_Param *p, int i) {
+    try {
+        SlvsFile_ConditionThrow(i < SK.param.n,
+                                ssprintf("%d: The access is out of bounds.", i));
+        const Param &p = SK.param.Get(i);
+        *val = ToParam(p);
+        return ToNoException();
+    } catch(SlvsFile::SlvsFileException &ex) {
+        return ToExceptionResult(ex);
+    }
+}
+
+Slvs_Exception Slvs_GetEntityByIndex(Slvs_Entity *e, int i) {
+    try {
+        SlvsFile_ConditionThrow(i < SK.entity.n,
+                                ssprintf("%d: The access is out of bounds.", i));
+        const EntityBase &eb = SK.entity.Get(i);
+        *e = ToEntity(eb);
+        return ToNoException();
+    } catch(SlvsFile::SlvsFileException &ex) {
+        return ToExceptionResult(ex);
+    }
+}
+
+Slvs_Exception Slvs_GetConstraintByIndex(Slvs_Constraint *c, int i) {
+    try {
+        SlvsFile_ConditionThrow(i < SK.constraint.n,
+                                ssprintf("%d: The access is out of bounds.", i));
+        const ConstraintBase &cb = SK.constraint.Get(i);
+        *c       = ToConstraint(cb);
         return ToNoException();
     } catch(SlvsFile::SlvsFileException &ex) {
         return ToExceptionResult(ex);
