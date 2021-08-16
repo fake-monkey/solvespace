@@ -683,17 +683,3 @@ Slvs_Exception Slvs_GetConstraintByIndex(Slvs_Constraint *c, int i) {
 }
 
 }
-
-//void SlvsFile::SlvsLibClass::ChangeConstraintVal(uint32_t v, double val){
-//    hConstraint hc = {};
-//    hc.v           = v;
-//    ConstraintBase &c = *SK.GetConstraint(hc);
-//    c.valA            = val;
-//}
-//
-//const char *SlvsFile::SlvsLibClass::GetConstraintName(uint32_t v) {
-//    hConstraint hc    = {};
-//    hc.v              = v;
-//    ConstraintBase &c = *SK.GetConstraint(hc);
-//    return c.name.c_str();
-//}
