@@ -572,6 +572,7 @@ static inline Slvs_System GetSystemAfterLoad() {
     sys.faileds          = 0;
     sys.dof              = 0;
     sys.result           = SLVS_RESULT_OKAY;
+    return sys;
 }
 
 extern "C" {
@@ -632,7 +633,7 @@ Slvs_Exception Slvs_GetConstraintByID(Slvs_Constraint *s, Slvs_hConstraint v) {
     }
 }
 
-Slvs_Exception Slvs_SetConstraintValByID(Slvs_Constraint * c, Slvs_hConstraint v, double val) {
+Slvs_Exception Slvs_SetConstraintValByID(Slvs_Constraint *c, Slvs_hConstraint v, double val) {
     try {
         hConstraint h      = {v};
         ConstraintBase *cb = SK.constraint.FindByIdNoOops(h);
@@ -649,8 +650,8 @@ Slvs_Exception Slvs_GetParamByIndex(Slvs_Param *p, int i) {
     try {
         SlvsFile_ConditionThrow(i < SK.param.n,
                                 ssprintf("%d: The access is out of bounds.", i));
-        const Param &p = SK.param.Get(i);
-        *val = ToParam(p);
+        const Param &pb = SK.param.Get(i);
+        *p = ToParam(pb);
         return ToNoException();
     } catch(SlvsFile::SlvsFileException &ex) {
         return ToExceptionResult(ex);
