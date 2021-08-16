@@ -151,17 +151,18 @@ extern "C" {
         char *condition;
     } Slvs_Exception;
 
-    Slvs_Exception Slvs_Load(Slvs_System *sys, char *filename);
-    Slvs_Exception Slvs_File_Solve(Slvs_SolveResult *r);
+    DLL Slvs_Exception Slvs_Load(Slvs_System *sys, char *filename);
+    DLL Slvs_Exception Slvs_File_Solve(Slvs_SolveResult *r);
 
-    Slvs_Exception Slvs_GetParamByID(Slvs_Param *p, Slvs_hParam v);
-    Slvs_Exception Slvs_GetEntityByID(Slvs_Entity *e, Slvs_hEntity v);
-    Slvs_Exception Slvs_GetConstraintByID(Slvs_Constraint *s, Slvs_hConstraint v);
-    Slvs_Exception Slvs_SetConstraintValByID(Slvs_Constraint *c, Slvs_hConstraint v, double val);
+    DLL Slvs_Exception Slvs_GetParamByID(Slvs_Param *p, Slvs_hParam v);
+    DLL Slvs_Exception Slvs_GetEntityByID(Slvs_Entity *e, Slvs_hEntity v);
+    DLL Slvs_Exception Slvs_GetConstraintByID(Slvs_Constraint *s, Slvs_hConstraint v);
+    DLL Slvs_Exception Slvs_SetConstraintValByID(Slvs_Constraint *c, Slvs_hConstraint v,
+                                                 double val);
 
-    Slvs_Exception Slvs_GetParamByIndex(Slvs_Param *p, int i);
-    Slvs_Exception Slvs_GetEntityByIndex(Slvs_Entity *e, int i);
-    Slvs_Exception Slvs_GetConstraintByIndex(Slvs_Constraint *c, int i);
+    DLL Slvs_Exception Slvs_GetParamByIndex(Slvs_Param *p, int i);
+    DLL Slvs_Exception Slvs_GetEntityByIndex(Slvs_Entity *e, int i);
+    DLL Slvs_Exception Slvs_GetConstraintByIndex(Slvs_Constraint *c, int i);
 
 #ifdef __cplusplus
 }
