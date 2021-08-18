@@ -1,11 +1,12 @@
 #define LIBRARY
 #define EXPORT_DLL
-#define VERSION_STRING "\261\262\263" "SolveSpaceREVa"
+#define VERSION_STRING "2.0-3.0 SolveSpaceREVa"
 #include "solvespace.h"
 #include "dsc.h"
 #include <string>
 #include "SlvsFile.h"
 #include "GetSYS.h"
+#include <sstream>
 
 void SolveSpace::Sketch::Clear() {
     //group.Clear();
@@ -27,13 +28,19 @@ void SolveSpace::Sketch::Empty() {
     param.Empty();
 }
 
-namespace SlvsFile {
-    static void EmptyExisting();
-}
-
 using std::string;
 using namespace SolveSpace;
 using namespace SolveSpace::Platform;
+
+static std::stringstream Log;
+
+static void LogError(const string &message) {
+    LogError(message.c_str());
+}
+
+static void LogError(const char *message) {
+    Log << message;
+}
 
 SlvsFile::SlvsLibClass::TempSV SlvsFile::SlvsLibClass::sv = {};
 
@@ -175,7 +182,7 @@ const SlvsFile::SlvsLibClass::SaveTable SlvsFile::SlvsLibClass::SAVED[] = {
     { 0, NULL, 0, NULL }
 };
 
-static void SlvsFile::EmptyExisting() {
+void SlvsFile::SlvsLibClass::EmptyExisting() {
     SK.Empty();
     GetSYS().Empty();
 }
@@ -352,7 +359,7 @@ bool SlvsFile::SlvsLibClass::LoadFromFile(const Platform::Path &filename, bool c
     }
 
     if(fileLoadError) {
-        SlvsFile_Throw(_("Unrecognized data in file. This file may be corrupt, or "
+        LogError(_("Unrecognized data in file. This file may be corrupt, or "
                          "from a newer version of the program."));
         // At least leave the program in a non-crashing state.
         if(SK.group.IsEmpty()) {
@@ -680,6 +687,10 @@ Slvs_Exception Slvs_GetConstraintByIndex(Slvs_Constraint *c, int i) {
     } catch(SlvsFile::SlvsFileException &ex) {
         return ToExceptionResult(ex);
     }
+}
+
+void Slvs_ClearExisting() {
+    SLC.ClearExisting();
 }
 
 }

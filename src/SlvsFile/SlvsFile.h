@@ -80,7 +80,7 @@ private:
     // loaded when we have link groups.
     FILE *fh;
 
-    void ClearExisting();
+    void EmptyExisting();
     void LoadUsingTable(const Platform::Path &filename, char *key, char *val);
     bool LoadFromFile(const Platform::Path &filename, bool canCancel = false);
     int StrStartsWith(const char *str, const char *start);
@@ -88,8 +88,9 @@ private:
     void ReGenerateSystem();
 
 public:
+    void ClearExisting();
     ~SlvsLibClass() {
-        ClearExisting();
+        //ClearExisting();
     }
     Sketch &GetSK() {
         return SK;
@@ -163,6 +164,8 @@ extern "C" {
     DLL Slvs_Exception Slvs_GetParamByIndex(Slvs_Param *p, int i);
     DLL Slvs_Exception Slvs_GetEntityByIndex(Slvs_Entity *e, int i);
     DLL Slvs_Exception Slvs_GetConstraintByIndex(Slvs_Constraint *c, int i);
+
+    DLL void Slvs_ClearExisting();
 
 #ifdef __cplusplus
 }
