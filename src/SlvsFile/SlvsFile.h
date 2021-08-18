@@ -143,7 +143,7 @@ extern "C" {
 #endif
 
     typedef struct {
-        bool hadThrow;
+        int hadThrow;
         char *message;
         char *file;
         int line;
