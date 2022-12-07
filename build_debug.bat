@@ -4,6 +4,7 @@ goto :eof
 
 :next
 setlocal
+git submodule update --init
 mkdir build
 cd build
 set Configuration=Debug
